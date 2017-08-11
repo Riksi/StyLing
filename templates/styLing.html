@@ -132,8 +132,6 @@ function HSVtoRGB(h, s, v) {
       span.style.display='inline-block';
       if(ind >= 30){
         var val = probs.probs[ind];
-        console.log(token);
-        console.log(val);
         var hue = val*180;  // go from green to red
         var saturation = val*50;   // fade to white as it approaches 50
         var c =HSVtoRGB(hue,saturation,100);
