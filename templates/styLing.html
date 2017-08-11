@@ -125,18 +125,20 @@ function HSVtoRGB(h, s, v) {
     var probs = {{probs | tojson}};
     // var width = {{width}};
     var div =document.getElementById('display');
-    probs.tokens.slice(30).forEach(function(token, ind){
+    probs.tokens.forEach(function(token, ind){
       var span = document.createElement('span');
       span.innerText = token;
       span.style.paddingRight='5px';
       span.style.display='inline-block';
-      var val = probs.probs[ind];
-      console.log(token);
-      console.log(val);
-      var hue = val*180;  // go from green to red
-      var saturation = val*50;   // fade to white as it approaches 50
-      var c =HSVtoRGB(hue,saturation,100);
-      span.style.backgroundColor = 'rgb(' + c[0] + ',' + c[1] + ',' + c[2] + ')';
+      if(ind >= 30){
+        var val = probs.probs[ind];
+        console.log(token);
+        console.log(val);
+        var hue = val*180;  // go from green to red
+        var saturation = val*50;   // fade to white as it approaches 50
+        var c =HSVtoRGB(hue,saturation,100);
+        span.style.backgroundColor = 'rgb(' + c[0] + ',' + c[1] + ',' + c[2] + ')';
+      }
       div.appendChild(span);
     });
 
