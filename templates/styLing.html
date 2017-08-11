@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>StyLing</title>
+    <!-- Bootstrap core CSS -->
+    <link href= "{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/styLing.css') }}" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+  </head>
+  <body>
+    <div class = 'container'>
+        <header class = 'row'>
+          <div class = 'col-md-12'> 
+            <h1>StyLing</h1>
+          </div>
+        </header>
+        <section class = 'row'>
+            <form class = 'col-md-6' method="post" action="/">
+              <textarea name='text' class="display">{% if text %}{{text}}{% else %}Enter some text to evaluate your style{% endif %}</textarea>
+              <p class='display'>
+                <input type="submit" value="Evaluate" class="btn">
+              </p>
+              {% if message %}
+                {{message}}
+              {% endif %}
+            </form>
+            <div class = 'col-md-6'>
+              <div class = 'display well' id = 'display'>
+              </div>
+              {% if width %}
+              <h4>Fluency</h4>
+              <div class="progress">
+                  <div class="progress-bar" role="progressbar" style="width:{{width}}%"> </div>
+              </div>
+              {% endif %}
+            </div>
+        </section>
+    </div>
+
+  {% if probs %} 
+  <script>
+
+function HSVtoRGB(h, s, v) {
+    var r, g, b;
+    var i;
+    var f, p, q, t;
+    // Make sure our arguments stay in-range
+    h = Math.max(0, Math.min(360, h));
+    s = Math.max(0, Math.min(100, s));
+    v = Math.max(0, Math.min(100, v));
+    // We accept saturation and value arguments from 0 to 100 because that's
+    // how Photoshop represents those values. Internally, however, the
+    // saturation and value are calculated from a range of 0 to 1. We make
+    // That conversion here.
+    s /= 100;
+    v /= 100;
+     
+    if(s == 0) {
+        // Achromatic (grey)
+        r = g = b = v;
+        return [
+            Math.round(r * 255), 
+            Math.round(g * 255), 
+            Math.round(b * 255)
+        ];
+    }
+     
+    h /= 60; // sector 0 to 5
+    i = Math.floor(h);
+    f = h - i; // factorial part of h
+    p = v * (1 - s);
+    q = v * (1 - s * f);
+    t = v * (1 - s * (1 - f));
+     
+    switch(i) {
+        case 0:
+            r = v;
+            g = t;
+            b = p;
+            break;
+     
+        case 1:
+            r = q;
+            g = v;
+            b = p;
+            break;
+     
+        case 2:
+            r = p;
+            g = v;
+            b = t;
+            break;
+     
+        case 3:
+            r = p;
+            g = q;
+            b = v;
+            break;
+     
+        case 4:
+            r = t;
+            g = p;
+            b = v;
+            break;
+     
+        default: // case 5:
+            r = v;
+            g = p;
+            b = q;
+    }
+     
+    return [
+        Math.round(r * 255), 
+        Math.round(g * 255), 
+        Math.round(b * 255)
+    ];
+}
+    var a = {{a | tojson }}
+    var probs = {{probs | tojson}};
+    // var width = {{width}};
+    var div =document.getElementById('display');
+    probs.tokens.slice(30).forEach(function(token, ind){
+      var span = document.createElement('span');
+      span.innerText = token;
+      span.style.paddingRight='5px';
+      span.style.display='inline-block';
+      var val = probs.probs[ind];
+      console.log(token);
+      console.log(val);
+      var hue = val*180;  // go from green to red
+      var saturation = val*50;   // fade to white as it approaches 50
+      var c =HSVtoRGB(hue,saturation,100);
+      span.style.backgroundColor = 'rgb(' + c[0] + ',' + c[1] + ',' + c[2] + ')';
+      div.appendChild(span);
+    });
+
+    // var bar = document.getElementsByClassName('progress-bar')[0];
+    // var c =HSVtoRGB((width/100)*120-25,50,100);
+    // bar.style.backgroundColor = 'rgb(' + c[0] + ',' + c[1] + ',' + c[2] + ')';
+  </script>
+  {% endif %}
+  </body>
+</html>

@@ -1,0 +1,29 @@
+header{
+    padding: 10px;
+}
+
+header h1{
+    font-size: 36px;
+}
+
+.display{
+    width: 100%;
+    min-height: 200px;
+}
+
+p.display{
+    min-height: 50px;
+    padding: 10px 0;
+}
+
+form.display{
+    color: 1px solid grey;
+}
+
+/*input[type='submit']{
+    float: right;
+}*/
+
+textarea{
+    padding: 5px;
+}
