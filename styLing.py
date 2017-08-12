@@ -1,5 +1,5 @@
 from flask import Flask, request, session, url_for, redirect, \
-     render_template, abort, g, flash, _app_ctx_stack
+     render_template, abort, g, flash, _app_ctx_stack, jsonify
 import numpy as np
 from keras.models import Sequential
 from keras.layers import Dense, Activation, Dropout
@@ -51,6 +51,15 @@ def get_word_vec(word):
 #perplexity would suggest that this corpus is right whilst a high one would suggest
 #otherwise
 
+@app.after_request
+def after_request(response):
+  response.headers.add('Access-Control-Allow-Origin', '*')
+  response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+  response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+  return response
+
+
+
 def build_model():
     model = Sequential()
     model.add(LSTM(512, return_sequences=True, input_shape=(MAX_LEN, EMBED_DIM)) )
@@ -86,23 +95,31 @@ def get_metrics(tokens):
     return probs, perplexities
 
 
-@app.route('/', methods=['GET'])
-def display():
-    return render_template('styLing.html')
-
 @app.route('/', methods=['POST'])
 def evaluate():
     text = request.form.get('text')
     # p,q = get_metrics(tokens)
     tokens = text.strip().split()
     if (len(tokens) < 100):
-        return render_template('styLing.html', message = 'Please enter at least 100 words')
+        return jsonify({'message': 'Please enter at least 100 words'})
     pr,px = get_metrics(tokens)
+    # pr = np.random.random(len(tokens)-30)
+    # px = [0,200]
+    #Reverse for purposes of display
+    pr2 = np.zeros_like(pr)
+    maxmap = dict(zip(np.argsort(-np.array(pr)),np.arange(len(pr))))
+    sort_asc = np.sort(pr)
+    for i,j in maxmap.items():
+        pr2[i] = sort_asc[j]
+
     width = 100*PERPLEXITY/float(px[-1])
-    print(px[-1],width)
-    probs = {'tokens':tokens, 'probs':[float(i) for i in pr]}
-    a = 0.00001
-    return render_template('styLing.html', a = a, text = text, width=width, probs=probs)
+    # probs = {'tokens':tokens, 'probs':[float(i) for i in pr]}
+    return jsonify(
+        {'probs':[float(i) for i in pr2], 
+        'orig_probs':[float(i) for i in pr],
+        'tokens': tokens, 
+        'width':width}
+    )
 
 
 app.debug = True

@@ -9,8 +9,8 @@
     <meta name="author" content="">
     <title>StyLing</title>
     <!-- Bootstrap core CSS -->
-    <link href= "{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/styLing.css') }}" rel="stylesheet">
+    <link href= '../static/css/bootstrap.min.css' rel="stylesheet">
+    <link href='../static/css/styLing.css' rel="stylesheet">
     <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
   </head>
   <body>
@@ -21,29 +21,28 @@
           </div>
         </header>
         <section class = 'row'>
-            <form class = 'col-md-6' method="post" action="/">
-              <textarea name='text' class="display">{% if text %}{{text}}{% else %}Enter some text to evaluate your style{% endif %}</textarea>
+            <form class = 'col-md-6'>
+              <textarea name='text' class="display" id='input'>Enter some text to evaluate your style</textarea>
               <p class='display'>
-                <input type="submit" value="Evaluate" class="btn">
+                <input type = 'button' value="Evaluate" class="btn" id='evaluate'>
               </p>
-              {% if message %}
-                {{message}}
-              {% endif %}
+              <p id = 'message'></p>
             </form>
             <div class = 'col-md-6'>
               <div class = 'display well' id = 'display'>
               </div>
-              {% if width %}
-              <h4>Fluency</h4>
-              <div class="progress">
-                  <div class="progress-bar" role="progressbar" style="width:{{width}}%"> </div>
+              
+              <div id = 'fluency'>
+                  <h4 class='fluency'>Fluency</h4>
+                  <div class="progress fluency">
+                      <div class="progress-bar" id='progress-bar' role="progressbar"> </div>
+                  </div>
               </div>
-              {% endif %}
+
             </div>
         </section>
     </div>
 
-  {% if probs %} 
   <script>
 
 function HSVtoRGB(h, s, v) {
@@ -121,29 +120,63 @@ function HSVtoRGB(h, s, v) {
         Math.round(b * 255)
     ];
 }
-    var a = {{a | tojson }}
-    var probs = {{probs | tojson}};
-    // var width = {{width}};
+
+var progressBar = $('#progress-bar');
+var message = $('#message');
+var fluency = document.getElementById('fluency'); 
+fluency.style.display='none';
+
+
+
+function createHeatMap(tokens, probs, orig){
     var div =document.getElementById('display');
-    probs.tokens.forEach(function(token, ind){
+    tokens.forEach(function(token, ind){
       var span = document.createElement('span');
       span.innerText = token;
       span.style.paddingRight='5px';
       span.style.display='inline-block';
       if(ind >= 30){
-        var val = probs.probs[ind-30];
-        var hue = val*180;  // go from green to red
+        var val = probs[ind-30];
+        var hue = val*360-180;  // go from green to red
         var saturation = val*50;   // fade to white as it approaches 50
         var c =HSVtoRGB(hue,saturation,100);
         span.style.backgroundColor = 'rgb(' + c[0] + ',' + c[1] + ',' + c[2] + ')';
       }
       div.appendChild(span);
     });
+}
 
-    // var bar = document.getElementsByClassName('progress-bar')[0];
-    // var c =HSVtoRGB((width/100)*120-25,50,100);
-    // bar.style.backgroundColor = 'rgb(' + c[0] + ',' + c[1] + ',' + c[2] + ')';
+    function send() {
+        var text = {
+            text: $("#input").val(),
+        }
+
+        $('#display').html('Sending...');
+
+        $.ajax({
+            url: 'http://localhost:5555/',
+            type: 'post',
+            dataType: 'json',
+            success: function (data) {
+              $('#display').html('');
+              if(data.message){
+                message.html(data.message);
+              }
+              else{
+                  message.css('display','none');
+                  fluency.style.display = 'block';
+                  progressBar.css('width',data.width+'%');
+                  createHeatMap(data.tokens, data.probs,data.orig_probs);
+                }
+                
+            },
+            data: text
+        });
+    }
+
+  document.getElementById('evaluate').onclick = send;
+
+
   </script>
-  {% endif %}
   </body>
 </html>
