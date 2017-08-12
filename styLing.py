@@ -96,6 +96,11 @@ def get_metrics(tokens):
 
 
 @app.route('/', methods=['POST'])
+def display():
+    return render_template('styLing.html')
+
+
+@app.route('/', methods=['POST'])
 def evaluate():
     text = request.form.get('text')
     # p,q = get_metrics(tokens)
