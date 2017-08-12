@@ -123,7 +123,7 @@ function HSVtoRGB(h, s, v) {
 
 var progressBar = $('#progress-bar');
 var message = $('#message');
-var fluency = document.getElementById('fluency'); 
+var fluency = document.getElementById('fluency'); s
 fluency.style.display='none';
 
 
@@ -154,7 +154,7 @@ function createHeatMap(tokens, probs, orig){
         $('#display').html('Sending...');
 
         $.ajax({
-            url: 'http://localhost:5555/',
+            url: 'http://ec2-34-250-249-101.eu-west-1.compute.amazonaws.com:8888/',
             type: 'post',
             dataType: 'json',
             success: function (data) {
