@@ -123,4 +123,4 @@ def evaluate():
 
 
 app.debug = True
-app.run(port=5555, host='0.0.0.0')
+app.run(port=8888, host='0.0.0.0')
