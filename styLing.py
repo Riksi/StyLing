@@ -95,7 +95,7 @@ def get_metrics(tokens):
     return probs, perplexities
 
 
-@app.route('/', methods=['POST'])
+@app.route('/')
 def display():
     return render_template('styLing.html')
 
