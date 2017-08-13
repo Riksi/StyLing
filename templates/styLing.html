@@ -9,9 +9,13 @@
     <meta name="author" content="">
     <title>StyLing</title>
     <!-- Bootstrap core CSS -->
+        
     <link href= '../static/css/bootstrap.min.css' rel="stylesheet">
     <link href='../static/css/styLing.css' rel="stylesheet">
+
     <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
   </head>
   <body>
     <div class = 'container'>
@@ -131,8 +135,8 @@ fluency.style.display='none';
 function createHeatMap(tokens, probs, orig){
     var div =document.getElementById('display');
     tokens.forEach(function(token, ind){
-      var span = document.createElement('span');
-      span.innerText = token;
+      var span = document.createElement('div');
+      span.innerHTML = '<span class=token>'+token+'</span>';
       span.style.paddingRight='5px';
       span.style.display='inline-block';
       if(ind >= 30){
@@ -142,9 +146,47 @@ function createHeatMap(tokens, probs, orig){
         var c =HSVtoRGB(hue,saturation,100);
         span.style.backgroundColor = 'rgb(' + c[0] + ',' + c[1] + ',' + c[2] + ')';
       }
+      // addToolTip(span);
+      span.className = 'tooltip2'
+      span.innerHTML += "<span class=tooltiptext></span>"
+      span.addEventListener('mouseover', getTranslation);
       div.appendChild(span);
     });
 }
+
+function getTranslation(){
+    var inner = this.getElementsByClassName('tooltiptext')[0];
+    var token = this.getElementsByClassName('token')[0];
+    if (!inner.hasAttribute('data-trans')){
+      $.ajax({
+        url: '/translation',
+        type: 'post',
+        dataType: 'json',
+        success: function (data) {
+          inner.innerText = data.trans;
+          inner.setAttribute('data-trans',null);
+        },
+        data: {'text':encodeURI(token.innerText)}
+      });
+    }
+}
+
+
+function addToolTip(elem){
+  var settings = {'data-toggle':'tooltip','data-placement':'top',
+  'title':'Title'}
+  for (var attr in settings){
+    elem.setAttribute(attr, settings[attr]);
+  }
+}
+
+console.log('Changed');
+// function getTranslation(){
+//   this.title = 'Translation';
+// }
+
+
+
 
     function send() {
         var text = {
@@ -154,7 +196,7 @@ function createHeatMap(tokens, probs, orig){
         $('#display').html('Sending...');
 
         $.ajax({
-            url: 'http//localhost:8888/',
+            url: '/',
             type: 'post',
             dataType: 'json',
             success: function (data) {
@@ -167,6 +209,7 @@ function createHeatMap(tokens, probs, orig){
                   fluency.style.display = 'block';
                   progressBar.css('width',data.width+'%');
                   createHeatMap(data.tokens, data.probs,data.orig_probs);
+                  // $("[data-toggle='tooltip']").tooltip();
                 }
                 
             },

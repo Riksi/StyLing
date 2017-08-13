@@ -6,6 +6,8 @@ from keras.layers import Dense, Activation, Dropout
 from keras.layers import LSTM, Embedding
 from keras.optimizers import RMSprop, Adam
 import pickle
+import requests
+import json
 from collections import Counter
 
 
@@ -19,7 +21,7 @@ VOCAB_SIZE = 10000
 
 
 
-all_vectors = pickle.load(open('/users/user/eecs/Deep_Learning/NLP/fastTextHindi.vec','rb'))
+all_vectors = pickle.load(open('fastTextHindi.vec','rb'))
 
 vec_dict = pickle.load(open('vec_pickle.pkl','rb'))
 
@@ -99,11 +101,24 @@ def get_metrics(tokens):
 def display():
     return render_template('styLing.html')
 
+@app.route('/translation' ,methods=['POST'])
+def translate():
+    print('Getting translation')
+    text = request.form.get('text')
+    url = "https://glosbe.com/gapi/translate?from=hin&dest=eng&format=json&phrase=%s"%text
+    result = requests.get(url).json()
+    
+    if len(result['tuc']) and result['tuc'][0].get('phrase'):
+        trans =  result['tuc'][0].get('phrase').get('text')
+    else:
+        trans = "Not available"
+    return jsonify({'trans':trans})
+
+
 
 @app.route('/', methods=['POST'])
 def evaluate():
     text = request.form.get('text')
-    # p,q = get_metrics(tokens)
     tokens = text.strip().split()
     if (len(tokens) < 100):
         return jsonify({'message': 'Please enter at least 100 words'})
@@ -118,14 +133,13 @@ def evaluate():
         pr2[i] = sort_asc[j]
 
     width = 100*PERPLEXITY/float(px[-1])
-    # probs = {'tokens':tokens, 'probs':[float(i) for i in pr]}
     return jsonify(
         {'probs':[float(i) for i in pr2], 
         'orig_probs':[float(i) for i in pr],
         'tokens': tokens, 
-        'width':width}
+        'width':min(100,width)}
     )
 
 
 app.debug = True
-app.run(port=8888, host='0.0.0.0')
+app.run(port=5555, host='0.0.0.0')
